@@ -23,9 +23,11 @@ var version = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'))).
 var read, parse, format, write, run;
 
 read = function (options, callback) {
+    //Recursive mkdir to output path
     fs.mkdirs(options.output, function () {
         var files = options.args.slice();
 
+        //Process each file one by one
         var nextFile = function () {
             var source = files.shift();
             fs.readFile(source, function (err, buf) {
@@ -42,8 +44,10 @@ read = function (options, callback) {
                     return nextFile();
                 }
 
+                //TODO: copy CSS file
+
                 if (callback) {
-                    callback();
+                    callback(source);
                 }
             });
         };
@@ -53,6 +57,7 @@ read = function (options, callback) {
 };
 
 parse = function (source, code, options) {
+    //Get multi-line block comments from AST
     var ast = esprima.parse(code, {"loc": true, "comment": true});
     var comments = ast.comments.filter(function (el) {
         var lines = el.value.split("\n");
@@ -66,6 +71,7 @@ parse = function (source, code, options) {
 
     var sections = [], section = {}, line = 0, comment, start, end;
 
+    //Loop through each comment block and get the associated code
     do {
         comment = comments.shift();
         start = comment.loc.start.line;
