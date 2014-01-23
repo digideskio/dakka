@@ -71,11 +71,13 @@ parse = function (source, code, options) {
         start = comment.loc.start.line;
         end = comment.loc.end.line;
 
-        section.code = lines.slice(line, start - 1).join("\n");
-        line = start;
+        if (line !== start - 1) {
+            section.code = lines.slice(line, start - 1).join("\n");
+            line = start;
 
-        sections.push(section);
-        section = {};
+            sections.push(section);
+            section = {};
+        }
 
         section.comment = lines.slice(line, end - 1).join("\n");
         line = end;
@@ -91,8 +93,8 @@ parse = function (source, code, options) {
 
 format = function (source, sections, options) {
     for (var i = 0; i < sections.length; ++i) {
+        //Format code with highlightjs
         if (sections[i].code) {
-            //Format code with highlightjs
             var code = highlightjs.highlight("javascript", sections[i].code).value;
             code = code.replace(/\s+$/, "");
             sections[i].code = '<div class="highlight"><pre>' + code + '</pre></div>';
