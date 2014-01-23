@@ -1,0 +1,23 @@
+{
+  "name": "dakka",
+  "version": "0.1.0",
+  "description": "",
+  "main": "dakka.js",
+  "author": "andzdroid",
+  "license": "BSD",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/andzdroid/dakka.git"
+  },
+  "dependencies": {
+    "esprima": "~1.0.4",
+    "commander": "~2.1.0",
+    "marked": "~0.3.0",
+    "highlight.js": "~8.0.0",
+    "fs-extra": "~0.8.1",
+    "mustache": "~0.8.1"
+  },
+  "bin": {
+      "dakka": "./bin/dakka"
+  }
+}
