@@ -7,7 +7,8 @@ var esprima = require("esprima");
 var mustache = require("mustache");
 
 var defaults = {
-    "output": "docs"
+    "output": "docs",
+    "css": path.join(__dirname, "resources", "style.css")
 };
 
 marked.setOptions({
@@ -44,7 +45,8 @@ read = function (options, callback) {
                     return nextFile();
                 }
 
-                //TODO: copy CSS file
+                fs.copySync(options.css, path.join(options.output, path.basename(options.css)));
+                fs.copySync(path.join(__dirname, "resources", "public"), path.join(options.output, "public"));
 
                 if (callback) {
                     callback(source);
@@ -61,32 +63,36 @@ parse = function (source, code, options) {
     var ast = esprima.parse(code, {"loc": true, "comment": true});
     var comments = ast.comments.filter(function (el) {
         var lines = el.value.split("\n");
-        return el.type === "Block" && lines.length > 2;
+        return el.type === "Block" && lines.length > 2 && lines[0].match(/^\*\s*$/);
     });
     var lines = code.split("\n");
 
     if (comments.length === 0) {
-        return {"code": lines.join("\n")};
+        return [{"code": lines.join("\n")}];
     }
 
     var sections = [], section = {}, line = 0, comment, start, end;
 
+    var stripPrefix = function (val) {
+        return val.replace(/^\s*\*/, "");
+    };
+
     //Loop through each comment block and get the associated code
     do {
         comment = comments.shift();
-        start = comment.loc.start.line;
-        end = comment.loc.end.line;
+        start = comment.loc.start.line - 1;
+        end = comment.loc.end.line - 1;
 
-        if (line !== start - 1) {
-            section.code = lines.slice(line, start - 1).join("\n");
+        if (line !== start) {
+            section.code = lines.slice(line, start).join("\n");
             line = start;
 
             sections.push(section);
             section = {};
         }
 
-        section.comment = lines.slice(line, end - 1).join("\n");
-        line = end;
+        section.comment = lines.slice(line + 1, end).map(stripPrefix).join("\n");
+        line = end + 1;
     } while (comments.length > 0);
 
     if (line < lines.length) {
@@ -122,7 +128,11 @@ write = function (source, sections, options) {
     var template = fs.readFileSync(dir).toString();
     var html = mustache.render(template, {
         "title": source,
-        "sections": sections
+        "sections": sections,
+        "css": path.basename(options.css),
+        "sources": options.args.map(function (val) {
+            return path.basename(val, path.extname(val));
+        })
     });
 
     return fs.writeFileSync(destination, html);
@@ -136,6 +146,7 @@ run = function (args) {
     commander.version(version)
         .usage("[options] files")
         .option("-o, --output [path]", "output to a given folder", defaults.output)
+        .option("-c, --css [file]", "use a custom css file", defaults.css)
         .parse(args)
         .name = "dakka";
 

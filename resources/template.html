@@ -5,15 +5,36 @@
     <link rel="stylesheet" media="all" href="{{css}}" />
 </head>
 <body>
-    <div id="container".
+    <div id="container">
         <div id="background"></div>
+
+        <ul id="jump_to">
+            <li>
+                <a class="large" href="javascript:void(0);">Jump to &hellip;</a>
+                <a class="small" href="javascript:void(0);">+</a>
+                <div id="jump_wrapper">
+                    <div id="jump_page">
+                        {{#sources}}
+                        <a class="source" href="{{.}}.html">{{.}}.js</a>
+                        {{/sources}}
+                    </div>
+                </div>
+            </li>
+        </ul>
+
         <ul class="sections">
+            <li id="title">
+                <div class="annotation">
+                    <h1>{{title}}</h1>
+                </div>
+            </li>
+
             {{#sections}}
             <li>
-                <div class="comment">
+                <div class="annotation">
                     {{{comment}}}
                 </div>
-                <div class="code">
+                <div class="content">
                     {{{code}}}
                 </div>
             </li>
