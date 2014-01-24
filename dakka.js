@@ -36,8 +36,7 @@ read = function (options, callback) {
                     return callback(err);
                 }
 
-                var code = buf.toString();
-                var sections = parse(source, code, options);
+                var sections = parse(source, buf.toString(), options);
                 format(source, sections, options);
                 write(source, sections, options);
 
@@ -45,11 +44,12 @@ read = function (options, callback) {
                     return nextFile();
                 }
 
+                //Copy static assets
                 fs.copySync(options.css, path.join(options.output, path.basename(options.css)));
                 fs.copySync(path.join(__dirname, "resources", "public"), path.join(options.output, "public"));
 
                 if (callback) {
-                    callback(source);
+                    callback();
                 }
             });
         };
@@ -62,6 +62,7 @@ parse = function (source, code, options) {
     //Get multi-line block comments from AST
     var ast = esprima.parse(code, {"loc": true, "comment": true});
     var comments = ast.comments.filter(function (el) {
+        //Only process block comments starting with /**
         var lines = el.value.split("\n");
         return el.type === "Block" && lines.length > 2 && lines[0].match(/^\*\s*$/);
     });
@@ -159,5 +160,9 @@ run = function (args) {
 
 module.exports = {
     "run": run,
+    "read": read,
+    "parse": parse,
+    "format": format,
+    "write": write,
     "version": version
 };
