@@ -33,7 +33,10 @@ read = function (options, callback) {
             var source = files.shift();
             fs.readFile(source, function (err, buf) {
                 if (err) {
-                    return callback(err);
+                    if (callback) {
+                        callback(err);
+                    }
+                    return;
                 }
 
                 var sections = parse(source, buf.toString(), options);
@@ -152,7 +155,11 @@ run = function (args) {
         .name = "dakka";
 
     if (commander.args.length) {
-        read(commander);
+        read(commander, function (err) {
+            if (err) {
+                console.error(err);
+            }
+        });
     } else {
         return console.log(commander.helpInformation());
     }
